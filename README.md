@@ -1,20 +1,19 @@
-## 简介
+<!--
+ * @Author: MeowKJ
+ * @Date: 2021-11-22 01:41:22
+ * @LastEditors: MeowKJ ijink@qq.com
+ * @LastEditTime: 2023-01-25 16:31:23
+ * @FilePath: /ChatMeow/README.md
+-->
+
+## 百度语言识别说明
+
+### 食用方法
 
 使用python 脚本方式测试rest api 识别接口
-
-**支持 python 2.7 及 python 3.7+**
-
-
-
-## 测试流程
-
-选择asr_json.py或者asr_raw.py之一进行测试，本文以asr_json.py为例，以下文档同样适用于asr_raw.py
-
-
-
-### 修改asr_json.py
-
+根目录下创建**key.py**文件
 从网页中申请的应用获取appKey和appSecret
+同时设置设置 CUID字段， 这是用户唯一标识，用来区分用户，计算 UV 值。建议填写能区分用户的机器 MAC 地址或 IMEI 码，长度为 60 字符以内。
 
 ```python
 # 填写网页上申请的appkey 如 API_KEY="g8eBUMSokVB1BHGmgxxxxxx"
@@ -22,30 +21,12 @@ API_KEY = '4E1BG9lTnlSeIf1NQFlrxxxx'
 
 # 填写网页上申请的APP SECRET 如 SECRET_KEY="94dc99566550d87f8fa8ece112xxxxx"
 SECRET_KEY = '544ca4657ba8002e3dea3ac2f5fxxxxx'
+
+#填写一个CUID
+CUID = 'PYTHON_MEOW_CHAT'
 ```
 
-
-
-
-## 运行asr_json.py，进行识别
-
-命令为 python asr_json.py
-
-
-
-结果如：
-```json
-{"corpus_no":"6595003755536106531","err_msg":"success.","err_no":0,"result":["北京科技馆，"],"sn":"611278720461535518969"}
-```
-
-windows 下显示可能产生乱码，请打开result.txt
-
-### 测试其它音频文件
-
-
-
-修改以下参数：
-
+conf.py文件有以下设置
 ```python
 # 需要识别的文件
 AUDIO_FILE = "./16k.pcm";
@@ -55,52 +36,4 @@ FORMAT = "pcm"; # 文件后缀 pcm/wav/amr/m4a 格式
 DEV_PID = 1537; #  1537 表示识别普通话，使用输入法模型。
 ```
 
-
-
-1. 如测试英语 修改为:
-
-```python
-DEV_PID = 1737;
-```
-
-2. 如测试采样率为16k 的amr文件16k-23850.amr，修改为：
-
-```python
-# 需要识别的文件
-AUDIO_FILE = "./16k-23850.amr";
-# 文件格式
-FORMAT = "amr"; // 文件后缀 pcm/wav/amr 格式，极速版额外支持m4a 格式
-
-```
-
-   
-
-## 测试极速版
-
-打开下面的注释
-
-```python
-# 极速版
-
-DEV_PID = 80001
-ASR_URL = 'http://vop.baidu.com/pro_api'
-SCOPE = 'brain_enhanced_asr'  # 有此scope表示有收费极速版能力，没有请在网页里开通极速版
-
-
-```
-另外极速版在支持文件后缀 pcm/wav/amr/m4a文件 
-
-
-## 测试自训练平台
-
-自训练平台模型上线后，您会看见 第二步：“”获取专属模型参数pid:8001，modelid:1234”，按照这个信息获取 dev_pid=8001，lm_id=1234
-
-打开下面的注释：
-
-```python
- DEV_PID = 8001 ;   
- LM_ID = 1234 ;
-
-"lm_id" : LM_ID,
-
-```
+[百度短语音识别标准版文档](https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u)
