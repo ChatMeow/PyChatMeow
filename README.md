@@ -2,7 +2,7 @@
  * @Author: MeowKJ
  * @Date: 2021-11-22 01:41:22
  * @LastEditors: MeowKJ ijink@qq.com
- * @LastEditTime: 2023-01-25 16:31:23
+ * @LastEditTime: 2023-01-25 16:33:25
  * @FilePath: /ChatMeow/README.md
 -->
 
@@ -11,7 +11,9 @@
 ### 食用方法
 
 使用python 脚本方式测试rest api 识别接口
+
 根目录下创建**key.py**文件
+
 从网页中申请的应用获取appKey和appSecret
 同时设置设置 CUID字段， 这是用户唯一标识，用来区分用户，计算 UV 值。建议填写能区分用户的机器 MAC 地址或 IMEI 码，长度为 60 字符以内。
 

@@ -14,7 +14,7 @@ def terminate():
 
 
 class AudioBase(object):
-    def __init__(self, source_file="", channels=1, rate=16000, chunk=1024, audio_min_rms=1000, max_low_audio_flag=30,max_high_audio_flag = 3,
+    def __init__(self, channels=1, rate=16000, chunk=1024, audio_min_rms=1000, max_low_audio_flag=30,max_high_audio_flag = 3,
                  recording_file=""):
         # self.source_file = source_file
         self.source_file = ""

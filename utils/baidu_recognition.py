@@ -8,7 +8,6 @@ from urllib.request import urlopen
 from urllib.request import Request
 from urllib.error import URLError
 from urllib.parse import urlencode
-from utils import AudioBase
 
 TOKEN_URL = 'http://aip.baidubce.com/oauth/2.0/token'
 ASR_URL = 'http://vop.baidu.com/server_api'
@@ -20,12 +19,14 @@ class DemoError(Exception):
 
 
 class BaiduRecognizer():
-    def __init__(self, dev_pid, scope, api_key, secret_key, cuid):
+    def __init__(self, dev_pid, scope, api_key, secret_key, cuid, audio_file):
         self.dev_pid = dev_pid
         self.scope = scope
         self.api_key = api_key
         self.secret_key = secret_key
         self.cuid = cuid
+        self.audio_file = audio_file
+        self.format =  audio_file[-3:]
         self.get_token()
 
     def get_token(self):
@@ -56,9 +57,9 @@ class BaiduRecognizer():
             raise DemoError(
                 'MAYBE API_KEY or SECRET_KEY not correct: access_token or scope not found in token response')
 
-    def recognice(self, audio_file, format="pcm", rate=16000):
+    def recognice(self, rate=16000):
         speech_data = []
-        with open(audio_file, 'rb') as speech_file:
+        with open(self.audio_file, 'rb') as speech_file:
             speech_data = speech_file.read()
 
         length = len(speech_data)
