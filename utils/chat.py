@@ -1,3 +1,10 @@
+'''
+Author: MeowKJ
+Date: 2023-01-25 18:32:01
+LastEditors: MeowKJ ijink@qq.com
+LastEditTime: 2023-01-26 21:20:30
+FilePath: /ChatMeow/utils/chat.py
+'''
 import openai
 import asyncio
 
@@ -17,7 +24,7 @@ class ChatMeow(object):
         self.start_sequence = ''
 
         self.restart_sequence = "Me: "
-        with open(self.prompt_path, 'w+', encoding='utf-8') as f:
+        with open(self.prompt_path, 'r', encoding='utf-8') as f:
             data = f.read()
             if (data == ""):
                 self.prompt = default_prompt
@@ -38,19 +45,18 @@ class ChatMeow(object):
             print(self.kwargs)
             response = openai.Completion.create(
                 prompt=prompt,
-                timeout = 5,
-           #     stop=[" Me:"],
+                timeout=5,
                 **self.kwargs
             )
+            text : str = response.choices[0].text
         except Exception as e:
             print("error", e)
             return str(e)
 
-        text = response.choices[0].text
-        if new_prompt != "" and text != "":
+        if text != "" and text != "Bot:":
             self.prompt = prompt + self.start_sequence + text
             asyncio.run(self.save_prompt())
-            return text
+            return text.strip('Bot: ')
         return ''
 
     async def save_prompt(self):

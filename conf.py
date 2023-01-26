@@ -1,3 +1,10 @@
+'''
+Author: MeowKJ
+Date: 2023-01-25 15:38:54
+LastEditors: MeowKJ ijink@qq.com
+LastEditTime: 2023-01-26 21:15:04
+FilePath: /ChatMeow/conf.py
+'''
 # 百度识别
 # 需要识别的文件
 FILE_PATH = './audio/test.pcm'
