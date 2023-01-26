@@ -2,11 +2,11 @@
 Author: MeowKJ
 Date: 2023-01-25 18:32:01
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-01-26 22:37:30
+LastEditTime: 2023-01-26 23:02:15
 FilePath: /ChatMeow/utils/chat.py
 '''
 import openai
-import asyncio
+import os
 import threading
 
 
@@ -25,7 +25,7 @@ class ChatMeow(object):
         self.start_sequence = ''
 
         self.restart_sequence = "Me: "
-        with open(self.prompt_path, 'r', encoding='utf-8') as f:
+        with open(self.prompt_path, 'w+', encoding='utf-8') as f:
             data = f.read()
             if (data == ""):
                 self.prompt = default_prompt
