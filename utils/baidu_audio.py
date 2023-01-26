@@ -1,16 +1,27 @@
+'''
+Author: MeowKJ
+Date: 2023-01-25 15:40:12
+LastEditors: MeowKJ ijink@qq.com
+LastEditTime: 2023-01-26 22:52:16
+FilePath: /ChatMeow/utils/baidu_audio.py
+'''
 
 # coding=utf-8
 import json
 import base64
 import time
-
+import os
 from urllib.request import urlopen
 from urllib.request import Request
 from urllib.error import URLError
 from urllib.parse import urlencode
+from urllib.parse import quote_plus
 
 TOKEN_URL = 'http://aip.baidubce.com/oauth/2.0/token'
 ASR_URL = 'http://vop.baidu.com/server_api'
+TTS_URL = 'http://tsn.baidu.com/text2audio'
+
+FORMATS = {3: "mp3", 4: "pcm", 5: "pcm", 6: "wav"}
 timer = time.perf_counter
 
 
@@ -18,15 +29,23 @@ class DemoError(Exception):
     pass
 
 
-class BaiduRecognizer():
-    def __init__(self, dev_pid, scope, api_key, secret_key, cuid, audio_file):
+class BaiduAudio():
+    def __init__(self, dev_pid, scope, api_key, secret_key, cuid, audio_file, save_path, per=4, spd=5, pit=5, vol=5, aue=6):
         self.dev_pid = dev_pid
         self.scope = scope
         self.api_key = api_key
         self.secret_key = secret_key
         self.cuid = cuid
         self.audio_file = audio_file
-        self.format =  audio_file[-3:]
+        self.format = audio_file[-3:]
+        self.per = per
+        self.spd = spd
+        self.pit = pit
+        self.vol = vol
+        self.aue = aue
+        self.save_path = save_path
+        self.tts_format = FORMATS[aue]
+
         self.get_token()
 
     def get_token(self):
@@ -64,11 +83,11 @@ class BaiduRecognizer():
 
         length = len(speech_data)
         if length == 0:
-            raise DemoError('file %s length read 0 bytes' % audio_file)
+            raise DemoError('file %s length read 0 bytes' % self.audio_file)
         speech = base64.b64encode(speech_data)
         speech = str(speech, 'utf-8')
         params = {'dev_pid': self.dev_pid,
-                  'format': format,
+                  'format': self.format,
                   'rate': rate,
                   'token': self.token,
                   'cuid': self.cuid,
@@ -86,9 +105,41 @@ class BaiduRecognizer():
             result_str = f.read()
             print("Request time cost %f" % (timer() - begin))
         except URLError as err:
-            print('asr http response http code : ' + str(err.code))
-            result_str = err.read()
-            return 1, result_str
-
+            raise('asr http response http code : ' + str(err.code))
+        
         result_str = str(result_str, 'utf-8')
-        return 0, result_str
+        
+        text = dict(json.loads(result_str))["result"][0]        
+        return text
+
+    def tts(self, text: str):
+        tex = quote_plus(text)  # 此处TEXT需要两次urlencode
+        print(tex)
+        params = {'tok': self.token, 'tex': tex, 'per': self.per, 'spd': self.spd, 'pit': self.pit, 'vol': self.vol, 'aue': self.aue, 'cuid': self.cuid,
+                  'lan': 'zh', 'ctp': 1}  # lan ctp 固定参数
+
+        data = urlencode(params)
+        print('test on Web Browser' + TTS_URL + '?' + data)
+
+        req = Request(TTS_URL, data.encode('utf-8'))
+        has_error = False
+        try:
+            f = urlopen(req)
+            result_str = f.read()
+
+            headers = dict((name.lower(), value)
+                           for name, value in f.headers.items())
+
+            has_error = ('content-type' not in headers.keys()
+                         or headers['content-type'].find('audio/') < 0)
+        except URLError as err:
+            raise('asr http response http code : ' + str(err.code))
+            # result_str = err.read()
+            # has_error = True
+
+        save_file = os.path.join(self.save_path, 'result.' + self.tts_format)
+
+        with open(save_file, 'wb') as of:
+            of.write(result_str)
+
+        return save_file

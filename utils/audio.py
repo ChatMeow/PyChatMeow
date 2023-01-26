@@ -14,7 +14,7 @@ def terminate():
 
 
 class AudioBase(object):
-    def __init__(self, channels=1, rate=16000, chunk=1024, audio_min_rms=1000, max_low_audio_flag=30,max_high_audio_flag = 3,
+    def __init__(self, channels=1, rate=16000, chunk=1024, audio_min_rms=500, max_low_audio_flag=10, max_high_audio_flag=3,
                  recording_file=""):
         # self.source_file = source_file
         self.source_file = ""
@@ -39,7 +39,8 @@ class AudioBase(object):
         p = pyaudio.PyAudio()
 
         file_format = p.get_format_from_width(f.getsampwidth())
-        stream = p.open(format=file_format, channels=f.getnchannels(), rate=f.getframerate(), output=True)
+        stream = p.open(format=file_format, channels=f.getnchannels(),
+                        rate=f.getframerate(), output=True)
 
         data = f.readframes(chunk)
 
@@ -53,8 +54,6 @@ class AudioBase(object):
         return self
 
     def detect_audio(self):
-        print("* start detecting audio ~")
-
         stream = pyaudio_instance.open(format=stream_format,
                                        channels=self.channels,
                                        rate=self.rate,
@@ -63,13 +62,15 @@ class AudioBase(object):
         low_audio_flag = 0
         high_audio_flag = 0
         detect_count = 0
+        print("* start detecting audio ~")
+
         while True:
             detect_count += 1
 
             stream_data = stream.read(self.chunk)
 
             rms = audioop.rms(stream_data, 2)
-            print(f"the {detect_count} time detecting：", rms)
+            # print(f"the {detect_count} time detecting：", rms)
             if rms > self.audio_min_rms:
                 high_audio_flag = high_audio_flag + 1
                 low_audio_flag = 0

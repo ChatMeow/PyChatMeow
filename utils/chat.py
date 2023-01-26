@@ -2,14 +2,15 @@
 Author: MeowKJ
 Date: 2023-01-25 18:32:01
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-01-26 21:20:30
+LastEditTime: 2023-01-26 22:37:30
 FilePath: /ChatMeow/utils/chat.py
 '''
 import openai
 import asyncio
+import threading
 
 
-def prompt_filter(prompt: str) -> str:
+def prompt_filter(prompt):
     return prompt != '' and prompt != 'Bot:' and prompt != 'Me:'
 
 
@@ -48,26 +49,29 @@ class ChatMeow(object):
                 timeout=5,
                 **self.kwargs
             )
-            text : str = response.choices[0].text
+            text: str = response.choices[0].text
         except Exception as e:
             print("error", e)
             return str(e)
 
         if text != "" and text != "Bot:":
             self.prompt = prompt + self.start_sequence + text
-            asyncio.run(self.save_prompt())
+            threading.Thread(target=save_prompt, args=(
+                self.prompt, self.max_prompt_length, self.prompt_path)).start()
             return text.strip('Bot: ')
         return ''
 
-    async def save_prompt(self):
-        if (len(self.prompt) > self.max_prompt_length):
-            prompt_list = self.prompt.split('\n')
-            filter(prompt_filter, prompt_list)
-            while (len(self.prompt) < self.max_prompt_length):
-                del prompt_list[2]
-            prompt_list.join('\n')
-        try:
-            with open(self.prompt_path, 'w', encoding='utf-8') as f:
-                f.write(self.prompt)
-        except Exception as e:
-            print(e)
+
+def save_prompt(prompt, max_prompt_length, prompt_path):
+    prompt_list = prompt.split('\n')
+    new_prompt_list = list(filter(prompt_filter, prompt_list))
+    if (len("".join(new_prompt_list)) > max_prompt_length):
+        while (len("".join(new_prompt_list)) > max_prompt_length):
+            print("max_prompt_length", max_prompt_length)
+            del new_prompt_list[2]
+        '\n'.join(new_prompt_list)
+    try:
+        with open(prompt_path, 'w', encoding='utf-8') as f:
+            f.write("\n".join(new_prompt_list))
+    except Exception as e:
+        print(e)
