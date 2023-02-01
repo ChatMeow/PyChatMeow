@@ -2,7 +2,7 @@
 Author: MeowKJ
 Date: 2023-01-25 15:40:12
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-01-26 22:52:16
+LastEditTime: 2023-01-31 23:55:13
 FilePath: /ChatMeow/utils/baidu_audio.py
 '''
 
@@ -24,28 +24,20 @@ TTS_URL = 'http://tsn.baidu.com/text2audio'
 FORMATS = {3: "mp3", 4: "pcm", 5: "pcm", 6: "wav"}
 timer = time.perf_counter
 
-
-class DemoError(Exception):
-    pass
-
-
 class BaiduAudio():
-    def __init__(self, dev_pid, scope, api_key, secret_key, cuid, audio_file, save_path, per=4, spd=5, pit=5, vol=5, aue=6):
+    def __init__(self, api_key, secret_key, cuid, dev_pid=1537, scope="audio_voice_assistant_get", per=4, spd=5, pit=5, vol=5):
         self.dev_pid = dev_pid
         self.scope = scope
         self.api_key = api_key
         self.secret_key = secret_key
         self.cuid = cuid
-        self.audio_file = audio_file
-        self.format = audio_file[-3:]
         self.per = per
         self.spd = spd
         self.pit = pit
         self.vol = vol
-        self.aue = aue
-        self.save_path = save_path
-        self.tts_format = FORMATS[aue]
-
+        self.format = "pcm"
+        self.save_path = "./audio/"
+        self.tts_format = "wav"
         self.get_token()
 
     def get_token(self):
@@ -68,27 +60,27 @@ class BaiduAudio():
         if 'access_token' in result.keys() and 'scope' in result.keys():
             # SCOPE = False 忽略检查
             if self.scope and (not self.scope in result['scope'].split(' ')):
-                raise DemoError('scope is not correct')
+                raise Exception('scope is not correct')
             print('SUCCESS WITH TOKEN: %s  EXPIRES IN SECONDS: %s' %
                   (result['access_token'], result['expires_in']))
             self.token = result['access_token']
         else:
-            raise DemoError(
+            raise Exception(
                 'MAYBE API_KEY or SECRET_KEY not correct: access_token or scope not found in token response')
 
-    def recognice(self, rate=16000):
+    def recognice(self, audio_file):
         speech_data = []
-        with open(self.audio_file, 'rb') as speech_file:
+        with open(audio_file, 'rb') as speech_file:
             speech_data = speech_file.read()
 
         length = len(speech_data)
         if length == 0:
-            raise DemoError('file %s length read 0 bytes' % self.audio_file)
+            raise Exception('file %s length read 0 bytes' % audio_file)
         speech = base64.b64encode(speech_data)
         speech = str(speech, 'utf-8')
         params = {'dev_pid': self.dev_pid,
                   'format': self.format,
-                  'rate': rate,
+                  'rate': 16000,
                   'token': self.token,
                   'cuid': self.cuid,
                   'channel': 1,
@@ -105,17 +97,17 @@ class BaiduAudio():
             result_str = f.read()
             print("Request time cost %f" % (timer() - begin))
         except URLError as err:
-            raise('asr http response http code : ' + str(err.code))
-        
+            raise Exception('asr http response http code : ' + str(err.code))
+
         result_str = str(result_str, 'utf-8')
-        
-        text = dict(json.loads(result_str))["result"][0]        
+
+        text = dict(json.loads(result_str))["result"][0]
         return text
 
-    def tts(self, text: str):
+    def tts(self, text):
         tex = quote_plus(text)  # 此处TEXT需要两次urlencode
         print(tex)
-        params = {'tok': self.token, 'tex': tex, 'per': self.per, 'spd': self.spd, 'pit': self.pit, 'vol': self.vol, 'aue': self.aue, 'cuid': self.cuid,
+        params = {'tok': self.token, 'tex': tex, 'per': self.per, 'spd': self.spd, 'pit': self.pit, 'vol': self.vol, 'aue': 6, 'cuid': self.cuid,
                   'lan': 'zh', 'ctp': 1}  # lan ctp 固定参数
 
         data = urlencode(params)
@@ -130,13 +122,11 @@ class BaiduAudio():
             headers = dict((name.lower(), value)
                            for name, value in f.headers.items())
 
-            has_error = ('content-type' not in headers.keys()
-                         or headers['content-type'].find('audio/') < 0)
+            # has_error = ('content-type' not in headers.keys()
+            #              or headers['content-type'].find('audio/') < 0)
         except URLError as err:
-            raise('asr http response http code : ' + str(err.code))
-            # result_str = err.read()
-            # has_error = True
-
+            raise Exception('asr http response http code : ' + str(err.code))
+        
         save_file = os.path.join(self.save_path, 'result.' + self.tts_format)
 
         with open(save_file, 'wb') as of:

@@ -25,13 +25,13 @@ class AudioBase(object):
         self.audio_min_rms = audio_min_rms
         self.max_low_audio_flag = max_low_audio_flag
         self.max_high_audio_flag = max_high_audio_flag
-        self.recording_file = recording_file
+        # self.recording_file = recording_file
         self.audio_frames = []
 
     def __str__(self):
         return "This is AudioBase %s" % self.recording_file
 
-    def play(self, source_file="", chunk=None):
+    def play(self, source_file : str="", chunk=None) -> None:
         source_file = source_file if not self.source_file else self.source_file
         chunk = chunk if not self.chunk else self.chunk
 
@@ -51,9 +51,8 @@ class AudioBase(object):
         stream.stop_stream()
         stream.close()
         p.terminate()
-        return self
 
-    def detect_audio(self):
+    def detect_audio(self, recording_file : str) -> str:
         stream = pyaudio_instance.open(format=stream_format,
                                        channels=self.channels,
                                        rate=self.rate,
@@ -85,35 +84,14 @@ class AudioBase(object):
                 break
         stream.stop_stream()
         stream.close()
-        self.record()
-        return self
+        self.record(recording_file)
+        return recording_file
 
-    def record(self):
-        wf = wave.open(self.recording_file, 'wb')
+    def record(self, recording_file:str) -> None:
+        wf = wave.open(recording_file, 'wb')
         wf.setnchannels(self.channels)
         wf.setsampwidth(sample_width)
         wf.setframerate(self.rate)
         wf.writeframes(b''.join(self.audio_frames))
         wf.close()
         self.audio_frames = []
-        return self
-
-    def play_and_detect(self, source_file, channels, rate, chunk, audio_min_rms, max_low_audio_flag, recording,
-                        recording_file):
-        self.source_file = source_file
-        self.channels = channels
-        self.rate = rate
-        self.chunk = chunk
-        self.audio_min_rms = audio_min_rms
-        self.max_low_audio_flag = max_low_audio_flag
-        self.recording = recording
-        self.recording_file = recording_file
-
-        play_process = Process(target=self.play)
-        detect_process = Process(target=self.detect_audio)
-        play_process.start()
-        detect_process.start()
-
-        play_process.join()
-        detect_process.join()
-        return self

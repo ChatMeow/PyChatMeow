@@ -1,54 +1,24 @@
 
 # coding=utf-8
 
-from key import API_KEY, SECRET_KEY, CUID, OPENAI_API_KEY
-from conf import *
-from utils import *
+from key import BAIDUKEY, OPENAI_API_KEY
+from conf import baidu_config, openai_config
+from utils import AudioBase, ChatMeow, BaiduAudio
 
 if __name__ == '__main__':
 
-    # while True:
-    #     data = input()
-    #     print(chat.chat(data))
-    audio_handle = AudioBase(recording_file=FILE_PATH)
-    chat = ChatMeow(OPENAI_API_KEY, MAX_PROMPT_LENGTH, PROMPT_PATH, DEFAULT_PROMPT,
-                    **OPENAI_PARAMS)
-
-    baidu = BaiduAudio(DEV_PID, SCOPE, API_KEY, SECRET_KEY,
-                       CUID, FILE_PATH, SAVE_PATH, PER, SPD, PIT, VOL)
+    audio_handle = AudioBase()
+    chat = ChatMeow(OPENAI_API_KEY, **openai_config)
+    baidu = BaiduAudio(*BAIDUKEY, **baidu_config)
+    # print(baidu.per)
     while True:
+        audio_detect_file = audio_handle.detect_audio('./audio/audio.pcm')
 
-        try:
-            audio_handle.detect_audio()
-        except Exception as e:
-            print("语音捕获错误")
-            print(e)
-            continue
-        try:
-            result = baidu.recognice()
+        result_text = baidu.recognice(audio_detect_file)
+        print(result_text)
 
-        except Exception as e:
-            print("语音识别错误")
-            print(e)
-            continue
+        openai_output = chat.chat(result_text)
 
-        try:
-            open_ai_output = chat.chat(result)
-        except Exception as e:
-            print("OpenAI错误")
-            print(e)
-            continue
+        output_audio = baidu.tts(openai_output)
 
-        try:
-            file = baidu.tts(open_ai_output)
-        except Exception as e:
-            print("语音转换错误")
-            print(e)
-            continue
-
-        try:
-            audio_handle.play(file)
-        except Exception as e:
-            print("语音播报错误")
-            print(e)
-            continue
+        audio_handle.play(output_audio)

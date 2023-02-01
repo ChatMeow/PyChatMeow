@@ -2,7 +2,7 @@
 Author: MeowKJ
 Date: 2023-01-25 18:32:01
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-01-26 23:02:15
+LastEditTime: 2023-02-01 00:02:39
 FilePath: /ChatMeow/utils/chat.py
 '''
 import openai
@@ -15,15 +15,14 @@ def prompt_filter(prompt):
 
 
 class ChatMeow(object):
-    def __init__(self, api_key: str, max_prompt_length: int, prompt_path: str, default_prompt, **kwargs):
+    def __init__(self, api_key, max_prompt_length=1024, default_prompt="", opanai_api_params={}):
         openai.api_key = api_key
-        self.prompt_path = prompt_path
-        self.kwargs = kwargs
+        self.prompt_path = "prompt.txt"
+        self.opanai_api_params = opanai_api_params
         self.max_prompt_length = max_prompt_length
         self.prompt = ""
        # self.start_sequence = "Bot:"
         self.start_sequence = ''
-
         self.restart_sequence = "Me: "
         with open(self.prompt_path, 'w+', encoding='utf-8') as f:
             data = f.read()
@@ -32,7 +31,7 @@ class ChatMeow(object):
             else:
                 self.prompt = data
 
-    def chat(self, new_prompt: str) -> str:
+    def chat(self, new_prompt):
         if new_prompt == "":
             return ""
         new_prompt = self.restart_sequence + new_prompt + '\n'
@@ -43,11 +42,10 @@ class ChatMeow(object):
             prompt = self.prompt + '\n' + new_prompt
 
         try:
-            print(self.kwargs)
             response = openai.Completion.create(
                 prompt=prompt,
                 timeout=5,
-                **self.kwargs
+                **self.opanai_api_params
             )
             text: str = response.choices[0].text
         except Exception as e:
