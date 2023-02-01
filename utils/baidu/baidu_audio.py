@@ -2,8 +2,8 @@
 Author: MeowKJ
 Date: 2023-01-25 15:40:12
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-01-31 23:55:13
-FilePath: /ChatMeow/utils/baidu_audio.py
+LastEditTime: 2023-02-01 14:44:30
+FilePath: /ChatMeow/utils/baidu/baidu_audio.py
 '''
 
 # coding=utf-8
@@ -23,6 +23,7 @@ TTS_URL = 'http://tsn.baidu.com/text2audio'
 
 FORMATS = {3: "mp3", 4: "pcm", 5: "pcm", 6: "wav"}
 timer = time.perf_counter
+
 
 class BaiduAudio():
     def __init__(self, api_key, secret_key, cuid, dev_pid=1537, scope="audio_voice_assistant_get", per=4, spd=5, pit=5, vol=5):
@@ -68,68 +69,58 @@ class BaiduAudio():
             raise Exception(
                 'MAYBE API_KEY or SECRET_KEY not correct: access_token or scope not found in token response')
 
-    def recognice(self, audio_file):
-        speech_data = []
-        with open(audio_file, 'rb') as speech_file:
-            speech_data = speech_file.read()
 
-        length = len(speech_data)
-        if length == 0:
-            raise Exception('file %s length read 0 bytes' % audio_file)
-        speech = base64.b64encode(speech_data)
-        speech = str(speech, 'utf-8')
-        params = {'dev_pid': self.dev_pid,
-                  'format': self.format,
-                  'rate': 16000,
-                  'token': self.token,
-                  'cuid': self.cuid,
-                  'channel': 1,
-                  'speech': speech,
-                  'len': length
-                  }
-        post_data = json.dumps(params, sort_keys=False)
-        # print post_data
-        req = Request(ASR_URL, post_data.encode('utf-8'))
-        req.add_header('Content-Type', 'application/json')
-        try:
-            begin = timer()
-            f = urlopen(req)
-            result_str = f.read()
-            print("Request time cost %f" % (timer() - begin))
-        except URLError as err:
-            raise Exception('asr http response http code : ' + str(err.code))
+    def recog(self, speech_data):
+            length = len(speech_data)
+            if length == 0:
+                raise Exception('file %s length read 0 bytes')
+            speech = base64.b64encode(speech_data)
+            speech = str(speech, 'utf-8')
+            params = {'dev_pid': self.dev_pid,
+                    'format': self.format,
+                    'rate': 16000,
+                    'token': self.token,
+                    'cuid': self.cuid,
+                    'channel': 1,
+                    'speech': speech,
+                    'len': length
+                    }
+            post_data = json.dumps(params, sort_keys=False)
+            req = Request(ASR_URL, post_data.encode('utf-8'))
+            req.add_header('Content-Type', 'application/json')
+            try:
+                begin = timer()
+                f = urlopen(req)
+                result_str = f.read()
+                print("Request time cost %f" % (timer() - begin))
+            except URLError as err:
+                raise Exception('asr http response http code : ' + str(err.code))
 
-        result_str = str(result_str, 'utf-8')
+            result_str = str(result_str, 'utf-8')
 
-        text = dict(json.loads(result_str))["result"][0]
-        return text
+            text = dict(json.loads(result_str))["result"][0]
+            return text
+
 
     def tts(self, text):
         tex = quote_plus(text)  # 此处TEXT需要两次urlencode
-        print(tex)
         params = {'tok': self.token, 'tex': tex, 'per': self.per, 'spd': self.spd, 'pit': self.pit, 'vol': self.vol, 'aue': 6, 'cuid': self.cuid,
                   'lan': 'zh', 'ctp': 1}  # lan ctp 固定参数
 
         data = urlencode(params)
-        print('test on Web Browser' + TTS_URL + '?' + data)
 
         req = Request(TTS_URL, data.encode('utf-8'))
-        has_error = False
+        # has_error = False
         try:
             f = urlopen(req)
             result_str = f.read()
 
-            headers = dict((name.lower(), value)
-                           for name, value in f.headers.items())
+            # headers = dict((name.lower(), value)
+            #                for name, value in f.headers.items())
 
             # has_error = ('content-type' not in headers.keys()
             #              or headers['content-type'].find('audio/') < 0)
         except URLError as err:
             raise Exception('asr http response http code : ' + str(err.code))
-        
-        save_file = os.path.join(self.save_path, 'result.' + self.tts_format)
 
-        with open(save_file, 'wb') as of:
-            of.write(result_str)
-
-        return save_file
+        return result_str

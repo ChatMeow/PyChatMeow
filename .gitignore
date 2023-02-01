@@ -166,4 +166,6 @@ audio/
 
 key.py
 
-prompt.txt
+*.db
+
+*.sqlite
