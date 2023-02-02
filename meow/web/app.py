@@ -2,12 +2,12 @@
 Author: MeowKJ
 Date: 2023-02-02 14:41:56
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-02-02 17:49:16
+LastEditTime: 2023-02-02 23:08:07
 FilePath: /ChatMeow/meow/web/app.py
 '''
 from flask import Flask
 from flask import request
-
+from flask_cors import CORS
 
 import logging
 
@@ -50,5 +50,6 @@ def set_config():
 
 def create_app():
     logging.debug('Start create FLASK app')
+    CORS(app, resources=r'/*')
     app.run()
     # return flask_app

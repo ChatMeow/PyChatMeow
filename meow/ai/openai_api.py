@@ -2,7 +2,7 @@
 Author: MeowKJ
 Date: 2023-01-25 18:32:01
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-02-02 19:24:30
+LastEditTime: 2023-02-02 23:17:29
 FilePath: /ChatMeow/meow/ai/openai_api.py
 '''
 import openai
@@ -15,10 +15,10 @@ import logging
 
 
 class ChatMeow(object):
-    def __init__(self, api_key, max_prompt_length, default_prompt_me, default_prompt_bot, opanai_api_params={}):
+    def __init__(self, api_key, max_prompt_length, default_prompt_me, default_prompt_bot, openai_api_params={}):
         openai.api_key = api_key
         self.prompt_path = "prompt.txt"
-        self.opanai_api_params = opanai_api_params
+        self.openai_api_params = openai_api_params
         self.max_prompt_length = max_prompt_length
         self.start_sequence = ''
         self.restart_sequence = ''
@@ -55,7 +55,7 @@ class ChatMeow(object):
             response = openai.Completion.create(
                 prompt=prompt,
                 timeout=5,
-                **self.opanai_api_params
+                **self.openai_api_params
             )
             text: str = response.choices[0].text
             if (text.strip() == ''):

@@ -2,7 +2,7 @@
 Author: MeowKJ
 Date: 2023-01-25 15:40:12
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-02-02 17:57:31
+LastEditTime: 2023-02-03 00:08:50
 FilePath: /ChatMeow/meow/baidu/baidu_audio.py
 '''
 
@@ -123,10 +123,3 @@ class BaiduAudio():
             return 1, 'retry'
 
         return 0, result_str
-
-    def set_config(self, key, value):
-        if(hasattr(self, key)):
-            setattr(self, key, value)
-            return True
-        return False
-        
