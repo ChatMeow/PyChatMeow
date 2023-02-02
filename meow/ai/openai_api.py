@@ -2,7 +2,7 @@
 Author: MeowKJ
 Date: 2023-01-25 18:32:01
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-02-02 16:02:29
+LastEditTime: 2023-02-02 19:24:30
 FilePath: /ChatMeow/meow/ai/openai_api.py
 '''
 import openai
@@ -15,19 +15,18 @@ import logging
 
 
 class ChatMeow(object):
-    def __init__(self, api_key, max_prompt_length=1024, default_prompt="", opanai_api_params={}):
+    def __init__(self, api_key, max_prompt_length, default_prompt_me, default_prompt_bot, opanai_api_params={}):
         openai.api_key = api_key
         self.prompt_path = "prompt.txt"
         self.opanai_api_params = opanai_api_params
         self.max_prompt_length = max_prompt_length
-        self.default_prompt = default_prompt
-       # self.start_sequence = "Bot:"
         self.start_sequence = ''
-        self.restart_sequence = 'Me: '
+        self.restart_sequence = ''
+        self.default_prompt = self.restart_sequence + default_prompt_me + '\n' + self.start_sequence + default_prompt_bot
         self.current_prompt_length = 0
 
     @network_retry
-    def chat(self, new_prompt : str) -> str:
+    def chat(self, new_prompt: str) -> str:
         # ? 检查prompt格式
         if new_prompt == '' or new_prompt == ' ':
             logging.error('OPENAI CHAT GET EMPTY', 'Prompt can not be empty')
@@ -45,7 +44,8 @@ class ChatMeow(object):
             prompt = '\n'.join(prompt_list)
             prompt = prompt + '\n' + new_prompt
         except Exception as e:
-            logging.warning('database get prompt error {}. let prompt same with new prompt'.format(str(e)))
+            logging.warning(
+                'database get prompt error {}. let prompt same with new prompt'.format(str(e)))
             prompt = new_prompt
             return 2, 'database error'
 
@@ -58,18 +58,19 @@ class ChatMeow(object):
                 **self.opanai_api_params
             )
             text: str = response.choices[0].text
-            if (text.replace('Bot:', '').replace(' ', '') == ''):
-                logging.error('BOT SAY NOTHING -> the bot return the "{}"'.format(text))
+            if (text.strip() == ''):
+                logging.error(
+                    'BOT SAY NOTHING -> the bot return the "{}"'.format(text))
                 return 2, 'restart'
 
         except Exception as e:
             logging.error('OPENAI NETWORK ERROR. errror msg "{}"'.str(e))
             return 1, 'retry'
-        
+
         get_db_manager().add_one_prompt("Me", new_prompt.replace('\n', ''))
         get_db_manager().add_one_prompt("Bot", text.replace('\n', ''))
 
-        return 0, text[5:]
+        return 0, text
 
 
 # def save_prompt(prompt, max_prompt_length, prompt_path):

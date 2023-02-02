@@ -68,8 +68,8 @@ def set_conf_file(handler, key, value):
     data = get_conf_data()
     data[handler].update({key: value})
 
-    with open('config.yml', 'w',) as f:
-        f.write(yaml.dump(data, default_flow_style=False))
+    with open('config.yml', 'w', encoding='utf-8') as f:
+        f.write(yaml.dump(data, allow_unicode=True))
     return data
 
 
