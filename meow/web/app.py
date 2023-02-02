@@ -2,12 +2,12 @@
 Author: MeowKJ
 Date: 2023-02-02 14:41:56
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-02-02 23:08:07
+LastEditTime: 2023-02-03 00:29:16
 FilePath: /ChatMeow/meow/web/app.py
 '''
-from flask import Flask
+from flask import Flask, render_template
 from flask import request
-from flask_cors import CORS
+# from flask_cors import CORS
 
 import logging
 
@@ -15,11 +15,12 @@ from meow.utils.conf import get_conf_data
 from meow.utils.conf import set_conf_data
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
+
 
 @app.route('/')
 def index():
-    return 'Welcome! PyChatMeow'
+    return render_template('index.html')
 
 
 @app.route('/get_config', methods=['GET'])
@@ -50,6 +51,6 @@ def set_config():
 
 def create_app():
     logging.debug('Start create FLASK app')
-    CORS(app, resources=r'/*')
+    # CORS(app, resources=r'/*')
     app.run()
     # return flask_app
