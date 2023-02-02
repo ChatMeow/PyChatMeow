@@ -2,7 +2,7 @@
 Author: MeowKJ
 Date: 2023-01-25 15:40:12
 LastEditors: MeowKJ ijink@qq.com
-LastEditTime: 2023-02-02 16:06:52
+LastEditTime: 2023-02-02 17:57:31
 FilePath: /ChatMeow/meow/baidu/baidu_audio.py
 '''
 
@@ -97,7 +97,7 @@ class BaiduAudio():
                 begin = timer()
                 f = urlopen(req)
                 result_str = f.read()
-                print("Request time cost %f" % (timer() - begin))
+                logging.debug("Request time cost %f" % (timer() - begin))
             except URLError as err:
                 logging.error('BAIDU RECOG NETWORK ERROR -> baidu recognition error, asr http response http error : ' + str(err))
                 return 1, 'retry'
@@ -124,5 +124,9 @@ class BaiduAudio():
 
         return 0, result_str
 
-    # def set_config(self, key, value):
-    #     setattr(self, key, value)
+    def set_config(self, key, value):
+        if(hasattr(self, key)):
+            setattr(self, key, value)
+            return True
+        return False
+        

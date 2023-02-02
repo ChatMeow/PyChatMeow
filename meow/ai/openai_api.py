@@ -59,18 +59,16 @@ class ChatMeow(object):
             )
             text: str = response.choices[0].text
             if (text.replace('Bot:', '').replace(' ', '') == ''):
-                logging.error('BOT SAY NOTHING', 'the bot return the "{}"'.format(text))
+                logging.error('BOT SAY NOTHING -> the bot return the "{}"'.format(text))
                 return 2, 'restart'
 
         except Exception as e:
             logging.error('OPENAI NETWORK ERROR. errror msg "{}"'.str(e))
             return 1, 'retry'
-        # print(prompt)
+        
         get_db_manager().add_one_prompt("Me", new_prompt.replace('\n', ''))
         get_db_manager().add_one_prompt("Bot", text.replace('\n', ''))
-        # print('~' * 10)
-        # print(text)
-        # print('~' * 10)
+
         return 0, text[5:]
 
 

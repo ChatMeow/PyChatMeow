@@ -1,7 +1,7 @@
 from sqlite3 import Cursor
 import time
 import sqlite3
-
+import logging
 
 class DatabaseManager:
     conn = None
@@ -32,12 +32,12 @@ class DatabaseManager:
         )
         """)
 
-        print('Database initialized.')
+        logging.info('Database Initialized SUCCESS.')
+        logging.info('初始化数据库完成')
 
     def add_one_prompt(self, name: str, prompt: str):
         self.execute('insert into prompt (name, timestamp, prompt, length) values (?,?,?,?)',
                      (name, int(time.time()), prompt, len(prompt)))
-        # print('add one prompt {} {} {} {}'.format(name, int(time.time()), prompt, len(prompt)))
 
     def get_prompt(self, max_prompt_length: int) -> list:
         list = []
@@ -51,7 +51,6 @@ class DatabaseManager:
                 break
             index = index + 1
             current_prompt_length = current_prompt_length + row[1]
-            # print('{} get list {}'.format(row[2], row[0]))
             list.insert(0, row[0])
 
         return list
